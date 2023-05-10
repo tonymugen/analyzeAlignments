@@ -1,0 +1,86 @@
+/*
+ * Copyright (c) 2023 Anthony J. Greenberg
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/// Class definitions for FASTA alignment parsing
+/** \file
+ * \author Anthony J. Greenberg
+ * \copyright Copyright (c) 2023
+ * \version 0.1
+ *
+ * Class for reading, parsing, and manipulating DNA sequence alignments in FASTA format.
+ *
+ */
+
+#pragma once
+
+#include <vector>
+#include <utility> // for std::pair
+#include <string>
+
+namespace BayesicSpace {
+	class ParseFASTA;
+
+	/** \brief FASTA alignment parser
+	 *
+	 * Reads a FASTA alignment file, separates the sequences and headers, and provides analysis methods.
+	 * The data are stored in memory, so users should pay attention to file sizes.
+	 *
+	 */
+	class ParseFASTA {
+	public:
+		/** \brief Default constructor */
+		ParseFASTA() = default;
+		/** \brief Constructor from FASTA file 
+		 *
+		 * Read data from a FASTA file.
+		 *
+		 * \param[in] fastaFileName input FASTA file name
+		 */
+		ParseFASTA(const std::string &fastaFileName);
+		/** \brief Copy constructor 
+		 *
+		 * \param[in] toCopy object to copy
+		 */
+		ParseFASTA(const ParseFASTA &toCopy);
+		/** \brief Move constructor 
+		 *
+		 * \param[in] toMove object to move
+		 */
+		ParseFASTA(ParseFASTA &&toMove) noexcept;
+		/** \brief Copy assignment operator 
+		 *
+		 * \param[in] toCopy object to copy
+		 */
+		ParseFASTA& operator=(const ParseFASTA &toCopy);
+		/** \brief Move assignment operator 
+		 *
+		 * \param[in] toMove object to move
+		 */
+		ParseFASTA& operator=(ParseFASTA &&toMove) noexcept;
+		/** \brief Destructor */
+		~ParseFASTA() = default;
+	private:
+		/** \brief Alignment data 
+		 *
+		 * Each element in the vector is a sequence in the alignment.
+		 * The first string in the pair is the FASTA header, the second is the sequence without line breaks.
+		 */
+		std::vector< std::pair<std::string, std::string> > fastaAlignment_;
+	};
+}
