@@ -32,6 +32,8 @@
 #include <string>
 #include <fstream>
 
+#include <iostream>
+
 #include "fastaParser.hpp"
 
 using namespace BayesicSpace;
@@ -41,8 +43,9 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 	std::string fastaLine;
 	fastaFile.open(fastaFileName, std::ios::in);
 	// get the first line and examine it (skip any empty lines)
-	while ( std::getline(fastaFile, fastaLine) && !fastaLine.empty() ) {
+	while ( std::getline(fastaFile, fastaLine) && fastaLine.empty() ) {
 	}
+	std::cout << fastaLine;
 	if ( fastaLine.empty() ) {
 		throw std::string("ERROR: all lines in ") + fastaFileName + std::string(" are empty in ") +
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
@@ -59,6 +62,7 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 	}
 	fastaLine.erase(0, firstNonSpace);
 	fastaAlignment_.emplace_back(fastaLine, std::string());
+	std::cout << fastaAlignment_[0].first << "\n";
 
 	fastaFile.close();
 }

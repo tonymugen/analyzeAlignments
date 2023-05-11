@@ -58,6 +58,7 @@ install(TARGETS homoruns
 # library
 add_library(analizeAlignments
 	src/fastaParser.cpp
+	src/extraFunctions.cpp
 )
 
 target_include_directories(analizeAlignments

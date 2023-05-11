@@ -17,36 +17,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/// Identify homozygosity runs
+/// Extra functions
 /** \file
  * \author Anthony J. Greenberg
  * \copyright Copyright (c) 2023
  * \version 0.1
  *
- * Read a FASTA alignment file and identify low-diversity regions.
+ * Definitions of extra utility functions for the FASTA alignment analysis project.
  *
  */
 
-#include <iostream>
+#pragma once
 
-#include "extraFunctions.hpp"
-#include "fastaParser.hpp"
+#include <unordered_map>
+#include <string>
 
-int main(int argc, char *argv[]) {
-	const std::string cliHelp = "Available command line flags (in any order):\n"
-		"  --input-file  file_name (input file name; required).\n"
-		"  --window-size window_size (window size for similarity estimates; required).\n"
-		"  --out-file    file_name (output file name; required).\n";
-	try {
-		std::unordered_map <std::string, std::string> clInfo;
-		std::unordered_map <std::string, std::string> stringVariables;
-		std::unordered_map <std::string, int> intVariables;
-		BayesicSpace::parseCL(argc, argv, clInfo);
-		BayesicSpace::extractCLinfo(clInfo, intVariables, stringVariables);
-		BayesicSpace::ParseFASTA fastaAlign( stringVariables.at("input-file") );
-	} catch(std::string &problem) {
-		std::cerr << problem << "\n";
-		std::cerr << cliHelp;
-		return 1;
-	}
+namespace BayesicSpace {
+	/** \brief Command line parser
+	 *
+	 * Maps flags to values. Flags assumed to be of the form `--flag-name value`.
+	 *
+	 * \param[in] argc size of the `argv` array
+	 * \param[in] argv command line input array
+	 * \param[out] cli map of tags to values
+	 */
+	void parseCL(int &argc, char **argv, std::unordered_map<std::string, std::string> &cli);
+	/** \brief Extract parameters from parsed command line interface flags
+	 *
+	 * Extracts needed variable values, indexed by `std::string` encoded variable names.
+	 *
+	 * \param[in] parsedCLI flag values parsed from the command line
+	 * \param[out] intVariables indexed `int` variables for use by `main()`
+	 * \param[out] stringVariables indexed `std::string` variables for use by `main()`
+	 */
+	void extractCLinfo(const std::unordered_map<std::string, std::string> &parsedCLI, std::unordered_map<std::string, int> &intVariables, std::unordered_map<std::string, std::string> &stringVariables);
 }
