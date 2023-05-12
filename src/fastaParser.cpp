@@ -45,8 +45,7 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 	// get the first line and examine it (skip any empty lines)
 	while ( std::getline(fastaFile, fastaLine) && fastaLine.empty() ) {
 	}
-	std::cout << fastaLine;
-	if ( fastaLine.empty() ) {
+	if ( fastaLine.empty() || fastaFile.eof() ) {
 		throw std::string("ERROR: all lines in ") + fastaFileName + std::string(" are empty in ") +
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
 	}
@@ -61,9 +60,35 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
 	}
 	fastaLine.erase(0, firstNonSpace);
-	fastaAlignment_.emplace_back(fastaLine, std::string());
-	std::cout << fastaAlignment_[0].first << "\n";
-
+	fastaAlignment_.emplace_back(fastaLine, "");
+	while ( std::getline(fastaFile, fastaLine) ) {
+		if ( fastaLine.empty() ) {
+			continue;
+		}
+		if (fastaLine[0] == '>') {
+			fastaLine.erase(0, 1);                                                                       // erase the ">" at the beginning
+			const auto locFirstNonSpace = fastaLine.find_first_not_of(' ');
+			if (locFirstNonSpace == std::string::npos) {
+				throw std::string("ERROR: some non-space characters required in a FASTA header in ") +
+					std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+			}
+			fastaLine.erase(0, locFirstNonSpace);
+			fastaAlignment_.emplace_back(fastaLine, "");
+		} else {
+			fastaAlignment_.back().second += fastaLine;
+		}
+	}
+	if (fastaAlignment_.size() < 2) {
+		throw std::string("ERROR: alignment file ") + fastaFileName + std::string(" must have at least to sequence records in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+	const size_t alignmentSize = fastaAlignment_[0].second.size();
+	for (const auto &oneElement : fastaAlignment_) {
+		if (oneElement.second.size() != alignmentSize) {
+			throw std::string("ERROR: all sequences in file ") + fastaFileName + std::string(" must be the same length in ") +
+				std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+		}
+	}
 	fastaFile.close();
 }
 
