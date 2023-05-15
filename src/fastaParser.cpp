@@ -28,6 +28,7 @@
  */
 
 #include <vector>
+#include <unordered_map>
 #include <utility> // for std::pair
 #include <string>
 #include <fstream>
@@ -112,4 +113,18 @@ ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 		fastaAlignment_ = std::move(toMove.fastaAlignment_);
 	}
 	return *this;
+}
+std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) {
+	std::vector< std::pair< size_t, std::vector<uint32_t> > > result;
+	size_t windowStart{0};
+	std::unordered_map<std::string, uint32_t> sequenceTable;
+	for (const auto &eachSeq : fastaAlignment_) {
+		const std::string sequenceInWindow(eachSeq.second, windowStart, windowSize);
+		++sequenceTable[sequenceInWindow];
+	}
+	for (const auto &eachElem : sequenceTable) {
+		std::cout << eachElem.first << " => " << eachElem.second << "\n";
+	}
+
+	return result;
 }

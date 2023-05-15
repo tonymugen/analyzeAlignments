@@ -32,6 +32,7 @@
 #include <vector>
 #include <utility> // for std::pair
 #include <string>
+#include <cstdint>
 
 namespace BayesicSpace {
 	class ParseFASTA;
@@ -75,6 +76,26 @@ namespace BayesicSpace {
 		ParseFASTA& operator=(ParseFASTA &&toMove) noexcept;
 		/** \brief Destructor */
 		~ParseFASTA() = default;
+		/** \brief Number of sequences in alignment 
+		 *
+		 * \return number of sequences in the alignment
+		 */
+		size_t sequenceNumber() const noexcept {return fastaAlignment_.size(); };
+		/** \brief Alignment length
+		 *
+		 * \return alignment length
+		 */
+		size_t alignmentLength() const {return fastaAlignment_.at(0).second.size(); };
+		/** \brief Sequence diversity in windows 
+		 *
+		 * Calculate the number of different sequences in a window.
+		 * Reports the number of times each unique sequence occurs by window position.
+		 *
+		 * \param[in] windowSize window size in base pairs
+		 * \param[in] stepSize window movement steps in base pairs
+		 * \return vector of pairs that contain window start positions and unique sequence counts
+		 */
+		std::vector< std::pair< size_t, std::vector<uint32_t> > > diversityInWindows(const size_t &windowSize, const size_t &stepSize);
 	private:
 		/** \brief Alignment data 
 		 *

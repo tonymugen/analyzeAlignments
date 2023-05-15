@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 		BayesicSpace::parseCL(argc, argv, clInfo);
 		BayesicSpace::extractCLinfo(clInfo, intVariables, stringVariables);
 		BayesicSpace::ParseFASTA fastaAlign( stringVariables.at("input-file") );
+		auto result{fastaAlign.diversityInWindows(100, 0)};
 	} catch(std::string &problem) {
 		std::cerr << problem << "\n";
 		std::cerr << cliHelp;
