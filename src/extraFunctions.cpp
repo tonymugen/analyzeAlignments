@@ -63,10 +63,7 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 	intVariables.clear();
 	stringVariables.clear();
 	const std::array<std::string, 2> requiredStringVariables{"input-file", "out-file"};
-	const std::array<std::string, 1> requiredIntVariables{"window-size"};
-	const std::array<std::string, 3> optionalIntVariables{"hash-size", "threads", "n-rows-per-band"};
-
-	const std::unordered_map<std::string, int>         defaultIntValues{ {"hash-size", 0}, {"threads", -1}, {"n-rows-per-band", 0} };
+	const std::array<std::string, 2> requiredIntVariables{"window-size", "step-size"};
 
 	if ( parsedCLI.empty() ) {
 		throw std::string("No command line flags specified;");
@@ -78,18 +75,20 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 			throw std::string("ERROR: " + eachFlag + " specification is required and must be an integer");
 		}
 	}
-	for (const auto &eachFlag : optionalIntVariables) {
-		try {
-			intVariables[eachFlag] = stoi( parsedCLI.at(eachFlag) );
-		} catch(const std::exception &problem) {
-			intVariables[eachFlag] = defaultIntValues.at(eachFlag);
-		}
-	}
 	for (const auto &eachFlag : requiredStringVariables) {
 		try {
 			stringVariables[eachFlag] = parsedCLI.at(eachFlag);
 		} catch(const std::exception &problem) {
 			throw std::string("ERROR: " + eachFlag + " specification is required");
+		}
+	}
+}
+
+void BayesicSpace::saveDiversityTable(const std::vector< std::pair< size_t, std::vector<uint32_t> > > &diversityTable, std::fstream &outFile) {
+	outFile << "position\tcount\n";
+	for (const auto &eachWindow : diversityTable) {
+		for (const auto &count : eachWindow.second) {
+			outFile << eachWindow.first + 1 << "\t" << count << "\n";
 		}
 	}
 }

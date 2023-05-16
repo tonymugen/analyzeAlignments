@@ -27,6 +27,7 @@
  *
  */
 
+#include <fstream>
 #include <iostream>
 
 #include "extraFunctions.hpp"
@@ -36,6 +37,7 @@ int main(int argc, char *argv[]) {
 	const std::string cliHelp = "Available command line flags (in any order):\n"
 		"  --input-file  file_name (input file name; required).\n"
 		"  --window-size window_size (window size for similarity estimates; required).\n"
+		"  --step-size   step_size (step size for similarity estimates; required).\n"
 		"  --out-file    file_name (output file name; required).\n";
 	try {
 		std::unordered_map <std::string, std::string> clInfo;
@@ -44,7 +46,23 @@ int main(int argc, char *argv[]) {
 		BayesicSpace::parseCL(argc, argv, clInfo);
 		BayesicSpace::extractCLinfo(clInfo, intVariables, stringVariables);
 		BayesicSpace::ParseFASTA fastaAlign( stringVariables.at("input-file") );
-		auto result{fastaAlign.diversityInWindows(100, 0)};
+		size_t windowSize{0};
+		if (intVariables.at("window-size") > 0) {
+			windowSize = static_cast<size_t>( intVariables.at("window-size") );
+		} else {
+			throw std::string("ERROR: window size must be > 0");
+		}
+		size_t stepSize{0};
+		if (intVariables.at("window-size") > 0) {
+			stepSize = static_cast<size_t>( intVariables.at("step-size") );
+		} else {
+			throw std::string("ERROR: step size must be > 0");
+		}
+		auto result{fastaAlign.diversityInWindows(windowSize, stepSize)};
+		std::fstream outStream;
+		outStream.open(stringVariables.at("out-file"), std::ios::out);
+		BayesicSpace::saveDiversityTable(result, outStream);
+		outStream.close();
 	} catch(std::string &problem) {
 		std::cerr << problem << "\n";
 		std::cerr << cliHelp;

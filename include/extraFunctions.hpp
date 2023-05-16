@@ -30,7 +30,11 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
+#include <utility> // for std::pair
 #include <string>
+#include <cstdint>
+#include <fstream>
 
 namespace BayesicSpace {
 	/** \brief Command line parser
@@ -51,4 +55,14 @@ namespace BayesicSpace {
 	 * \param[out] stringVariables indexed `std::string` variables for use by `main()`
 	 */
 	void extractCLinfo(const std::unordered_map<std::string, std::string> &parsedCLI, std::unordered_map<std::string, int> &intVariables, std::unordered_map<std::string, std::string> &stringVariables);
+	/** \brief Save the diversity table 
+	 *
+	 * Save the diversity table. The output file will have two columns: 
+	 *     (1) window start position (repeated for every unique sequence).
+	 *     (2) number of unique sequence occurrences.
+	 * 
+	 * \param[in] diversityTable the diversity table data
+	 * \param[in] outFile output file stream
+	 */
+	void saveDiversityTable(const std::vector< std::pair< size_t, std::vector<uint32_t> > > &diversityTable, std::fstream &outFile);
 }

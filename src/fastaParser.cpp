@@ -117,14 +117,20 @@ ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) {
 	std::vector< std::pair< size_t, std::vector<uint32_t> > > result;
 	size_t windowStart{0};
-	std::unordered_map<std::string, uint32_t> sequenceTable;
-	for (const auto &eachSeq : fastaAlignment_) {
-		const std::string sequenceInWindow(eachSeq.second, windowStart, windowSize);
-		++sequenceTable[sequenceInWindow];
+	size_t windowEnd{windowSize};
+	while ( windowEnd < this->alignmentLength() ) {
+		std::unordered_map<std::string, uint32_t> sequenceTable;
+		for (const auto &eachSeq : fastaAlignment_) {
+			++sequenceTable[eachSeq.second.substr(windowStart, windowSize)];
+		}
+		std::vector<uint32_t> counts;
+		counts.reserve( sequenceTable.size() );
+		for (const auto &eachSequence : sequenceTable) {
+			counts.push_back(eachSequence.second);
+		}
+		result.emplace_back( windowStart, std::move(counts) );
+		windowStart += stepSize;
+		windowEnd   += stepSize;
 	}
-	for (const auto &eachElem : sequenceTable) {
-		std::cout << eachElem.first << " => " << eachElem.second << "\n";
-	}
-
 	return result;
 }
