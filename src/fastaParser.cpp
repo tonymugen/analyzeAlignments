@@ -91,6 +91,7 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 		}
 	}
 	fastaFile.close();
+	imputeMissing_();
 }
 
 ParseFASTA::ParseFASTA(const ParseFASTA &toCopy) {
@@ -114,6 +115,37 @@ ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 	}
 	return *this;
 }
+
+void ParseFASTA::imputeMissing_() {
+	const size_t alignLength = this->alignmentLength();
+	const std::string standardNucleotides("ACTGN-");
+	for (size_t iNuc = 0; iNuc < alignLength; ++iNuc) {
+		std::unordered_map<char, uint32_t> nucleotides;
+		std::vector<size_t> missingNucPositions;
+		size_t iSeq{0};
+		for (const auto &eachSeq : fastaAlignment_) {
+			char curNucleotide{eachSeq.second.at(iNuc)};
+			const auto cnPos = standardNucleotides.find_first_of(curNucleotide);
+			if (cnPos == std::string::npos) {
+				curNucleotide = 'N';
+			}
+			if (curNucleotide == 'N') {
+				missingNucPositions.push_back(iSeq);
+			}
+			++nucleotides[curNucleotide];
+			++iSeq;
+		}
+		for (const auto &nucCount : nucleotides) {
+			std::cout << nucCount.first << ":" << nucCount.second << " ";
+		}
+		std::cout << "; ";
+		for (const auto &mSeq : missingNucPositions) {
+			std::cout << mSeq << " ";
+		}
+		std::cout << "\n";
+	}
+}
+
 std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) {
 	std::vector< std::pair< size_t, std::vector<uint32_t> > > result;
 	size_t windowStart{0};

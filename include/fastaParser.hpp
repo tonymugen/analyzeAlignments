@@ -103,5 +103,10 @@ namespace BayesicSpace {
 		 * The first string in the pair is the FASTA header, the second is the sequence without line breaks.
 		 */
 		std::vector< std::pair<std::string, std::string> > fastaAlignment_;
+		/** \brief Impute missing values
+		 *
+		 * Replaces missing (N) nucleotides with the consensus value.
+		 */
+		void imputeMissing_();
 	};
 }
