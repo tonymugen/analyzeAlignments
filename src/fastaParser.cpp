@@ -32,8 +32,7 @@
 #include <utility> // for std::pair
 #include <string>
 #include <fstream>
-
-#include <iostream>
+#include <algorithm>
 
 #include "fastaParser.hpp"
 
@@ -135,14 +134,13 @@ void ParseFASTA::imputeMissing_() {
 			++nucleotides[curNucleotide];
 			++iSeq;
 		}
-		for (const auto &nucCount : nucleotides) {
-			std::cout << nucCount.first << ":" << nucCount.second << " ";
+		auto maxCountIt = std::max_element(nucleotides.begin(), nucleotides.end(), 
+			[](std::pair<char, uint32_t> count1, std::pair<char, uint32_t> count2){
+				return	count1.second < count2.second;
+			});
+		for (const auto &missingPos : missingNucPositions) {
+			fastaAlignment_.at(missingPos).second.at(iNuc) = maxCountIt->first;
 		}
-		std::cout << "; ";
-		for (const auto &mSeq : missingNucPositions) {
-			std::cout << mSeq << " ";
-		}
-		std::cout << "\n";
 	}
 }
 

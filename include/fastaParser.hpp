@@ -105,7 +105,7 @@ namespace BayesicSpace {
 		std::vector< std::pair<std::string, std::string> > fastaAlignment_;
 		/** \brief Impute missing values
 		 *
-		 * Replaces missing (N) nucleotides with the consensus value.
+		 * Replaces missing (N or other variants, e.g. Y, S, etc.) nucleotides with the consensus value.
 		 */
 		void imputeMissing_();
 	};
