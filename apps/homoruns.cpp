@@ -35,10 +35,11 @@
 
 int main(int argc, char *argv[]) {
 	const std::string cliHelp = "Available command line flags (in any order):\n"
-		"  --input-file  file_name (input file name; required).\n"
-		"  --window-size window_size (window size for similarity estimates; required).\n"
-		"  --step-size   step_size (step size for similarity estimates; required).\n"
-		"  --out-file    file_name (output file name; required).\n";
+		"  --input-file      file_name (input file name; required).\n"
+		"  --window-size     window_size (window size for similarity estimates; required).\n"
+		"  --step-size       step_size (step size for similarity estimates; required).\n"
+		"  --impute-missing  if set (with no value) replaces missing values with the consensus nucleotide.\n"
+		"  --out-file        file_name (output file name; required).\n";
 	try {
 		std::unordered_map <std::string, std::string> clInfo;
 		std::unordered_map <std::string, std::string> stringVariables;
@@ -46,6 +47,9 @@ int main(int argc, char *argv[]) {
 		BayesicSpace::parseCL(argc, argv, clInfo);
 		BayesicSpace::extractCLinfo(clInfo, intVariables, stringVariables);
 		BayesicSpace::ParseFASTA fastaAlign( stringVariables.at("input-file") );
+		if (stringVariables.at("impute-missing") == "set") {
+			fastaAlign.imputeMissing();
+		}
 		size_t windowSize{0};
 		if (intVariables.at("window-size") > 0) {
 			windowSize = static_cast<size_t>( intVariables.at("window-size") );

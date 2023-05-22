@@ -63,7 +63,9 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 	intVariables.clear();
 	stringVariables.clear();
 	const std::array<std::string, 2> requiredStringVariables{"input-file", "out-file"};
+	const std::array<std::string, 1> optionalStringVariables{"impute-missing"};
 	const std::array<std::string, 2> requiredIntVariables{"window-size", "step-size"};
+	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"} };
 
 	if ( parsedCLI.empty() ) {
 		throw std::string("No command line flags specified;");
@@ -80,6 +82,13 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 			stringVariables[eachFlag] = parsedCLI.at(eachFlag);
 		} catch(const std::exception &problem) {
 			throw std::string("ERROR: " + eachFlag + " specification is required");
+		}
+	}
+	for (const auto &eachFlag : optionalStringVariables) {
+		try {
+			stringVariables[eachFlag] = parsedCLI.at(eachFlag);
+		} catch(const std::exception &problem) {
+			stringVariables[eachFlag] = defaultStringValues.at(eachFlag);
 		}
 	}
 }

@@ -30,6 +30,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include <utility> // for std::pair
 #include <string>
 #include <cstdint>
@@ -88,7 +89,7 @@ namespace BayesicSpace {
 		size_t alignmentLength() const {return fastaAlignment_.at(0).second.size(); };
 		/** \brief Sequence diversity in windows 
 		 *
-		 * Calculate the number of different sequences in a window.
+		 * Calculate the number of different sequences in window sliding along a sequence alignment.
 		 * Reports the number of times each unique sequence occurs by window position.
 		 *
 		 * \param[in] windowSize window size in base pairs
@@ -96,6 +97,21 @@ namespace BayesicSpace {
 		 * \return vector of pairs that contain window start positions and unique sequence counts
 		 */
 		std::vector< std::pair< size_t, std::vector<uint32_t> > > diversityInWindows(const size_t &windowSize, const size_t &stepSize);
+		/** \brief Extract an alignment window
+		 *
+		 * Calculate the number of different sequences in a window.
+		 * Reports the number of times each unique sequence occurs in the provided window.
+		 *
+		 * \param[in] windowStartPosition window start
+		 * \param[in] windowSize window size in base pairs
+		 * \return map of sequences to the number of times each occurs in the alignment
+		 */
+		std::unordered_map<std::string, uint32_t> extractWindow(const size_t &windowStartPosition, const size_t &windowSize);
+		/** \brief Impute missing values
+		 *
+		 * Replaces missing (N or other variants, e.g. Y, S, etc.) nucleotides with the consensus value.
+		 */
+		void imputeMissing();
 	private:
 		/** \brief Alignment data 
 		 *
@@ -103,10 +119,5 @@ namespace BayesicSpace {
 		 * The first string in the pair is the FASTA header, the second is the sequence without line breaks.
 		 */
 		std::vector< std::pair<std::string, std::string> > fastaAlignment_;
-		/** \brief Impute missing values
-		 *
-		 * Replaces missing (N or other variants, e.g. Y, S, etc.) nucleotides with the consensus value.
-		 */
-		void imputeMissing_();
 	};
 }

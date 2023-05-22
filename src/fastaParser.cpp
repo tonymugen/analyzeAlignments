@@ -90,7 +90,6 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 		}
 	}
 	fastaFile.close();
-	imputeMissing_();
 }
 
 ParseFASTA::ParseFASTA(const ParseFASTA &toCopy) {
@@ -115,7 +114,36 @@ ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 	return *this;
 }
 
-void ParseFASTA::imputeMissing_() {
+std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) {
+	std::vector< std::pair< size_t, std::vector<uint32_t> > > result;
+	size_t windowStart{0};
+	size_t windowEnd{windowSize};
+	while ( windowEnd < this->alignmentLength() ) {
+		std::unordered_map<std::string, uint32_t> sequenceTable;
+		for (const auto &eachSeq : fastaAlignment_) {
+			++sequenceTable[eachSeq.second.substr(windowStart, windowSize)];
+		}
+		std::vector<uint32_t> counts;
+		counts.reserve( sequenceTable.size() );
+		for (const auto &eachSequence : sequenceTable) {
+			counts.push_back(eachSequence.second);
+		}
+		result.emplace_back( windowStart, std::move(counts) );
+		windowStart += stepSize;
+		windowEnd   += stepSize;
+	}
+	return result;
+}
+
+std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t &windowStartPosition, const size_t &windowSize) {
+	std::unordered_map<std::string, uint32_t> result;
+	for (const auto &eachSeq : fastaAlignment_) {
+		++result[eachSeq.second.substr(windowStartPosition, windowSize)];
+	}
+	return result;
+}
+
+void ParseFASTA::imputeMissing() {
 	const size_t alignLength = this->alignmentLength();
 	const std::string standardNucleotides("ACTGN-");
 	for (size_t iNuc = 0; iNuc < alignLength; ++iNuc) {
@@ -142,25 +170,4 @@ void ParseFASTA::imputeMissing_() {
 			fastaAlignment_.at(missingPos).second.at(iNuc) = maxCountIt->first;
 		}
 	}
-}
-
-std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) {
-	std::vector< std::pair< size_t, std::vector<uint32_t> > > result;
-	size_t windowStart{0};
-	size_t windowEnd{windowSize};
-	while ( windowEnd < this->alignmentLength() ) {
-		std::unordered_map<std::string, uint32_t> sequenceTable;
-		for (const auto &eachSeq : fastaAlignment_) {
-			++sequenceTable[eachSeq.second.substr(windowStart, windowSize)];
-		}
-		std::vector<uint32_t> counts;
-		counts.reserve( sequenceTable.size() );
-		for (const auto &eachSequence : sequenceTable) {
-			counts.push_back(eachSequence.second);
-		}
-		result.emplace_back( windowStart, std::move(counts) );
-		windowStart += stepSize;
-		windowEnd   += stepSize;
-	}
-	return result;
 }
