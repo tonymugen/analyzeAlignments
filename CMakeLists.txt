@@ -33,7 +33,7 @@ set(CMAKE_CXX_STATIC_LINKER_FLAGS_PROFILE
 )
 
 include(GNUInstallDirs)
-# executable
+# executables
 add_executable(homoruns
 	apps/homoruns.cpp
 )
@@ -52,6 +52,27 @@ set_target_properties(homoruns PROPERTIES
 	CXX_EXTENSIONS       OFF
 )
 install(TARGETS homoruns
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+add_executable(extractWindow
+	apps/extractWindow.cpp
+)
+target_include_directories(extractWindow
+	PRIVATE include
+)
+target_link_libraries(extractWindow
+	PRIVATE analizeAlignments
+)
+target_compile_options(extractWindow
+	PRIVATE -Wall -Wextra -Wconversion -Wpedantic -Wshadow
+)
+set_target_properties(extractWindow PROPERTIES
+	CXX_STANDARD         14
+	CXX_STANDARD_REQURED ON
+	CXX_EXTENSIONS       OFF
+)
+install(TARGETS extractWindow
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

@@ -62,7 +62,18 @@ namespace BayesicSpace {
 	 *     (2) number of unique sequence occurrences.
 	 * 
 	 * \param[in] diversityTable the diversity table data
-	 * \param[in] outFile output file stream
+	 * \param[in,out] outFile output file stream
 	 */
 	void saveDiversityTable(const std::vector< std::pair< size_t, std::vector<uint32_t> > > &diversityTable, std::fstream &outFile);
+	/** \brief Save unique sequences 
+	 *
+	 * Save unique sequences in an alignment window.
+	 * If in FASTA format, the number of times each sequence appears in an alignment is in the header.
+	 * If in TAB format, sequence and the number of occurrences are on the same line, separated by a tab.
+	 *
+	 * \param[in] uniqueSequences table of unique sequences and their counts
+	 * \param[in] fileType TAB or FASTA, otherwise throws
+	 * \param[in,out] outFile output stream
+	 */
+	void saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &fileType, std::fstream &outFile);
 }

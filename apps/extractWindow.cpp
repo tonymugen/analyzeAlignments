@@ -16,5 +16,65 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+/// Extract unique sequences from an alignment segment
+/** \file
+ * \author Anthony J. Greenberg
+ * \copyright Copyright (c) 2023
+ * \version 0.1
+ *
+ * Read a FASTA alignment file and, extract a segment, and save to a separate file.
+ *
+ */
 
+#include <fstream>
+#include <iostream>
+#include <algorithm>
+#include <cctype>
 
+#include "extraFunctions.hpp"
+#include "fastaParser.hpp"
+
+int main(int argc, char *argv[]) {
+	const std::string cliHelp = "Available command line flags (in any order):\n"
+		"  --input-file      file_name (input file name; required).\n"
+		"  --start-position  start_position (window start position; defaults to 1, first nucleotide).\n"
+		"  --window-size     window_size (window size for similarity estimates; required).\n"
+		"  --impute-missing  if set (with no value) replaces missing values with the consensus nucleotide.\n"
+		"  --out-format      output file format (FASTA or TAB case-insensitive; defaults to TAB).\n"
+		"  --out-file        file_name (output file name; required).\n";
+	try {
+		std::unordered_map <std::string, std::string> clInfo;
+		std::unordered_map <std::string, std::string> stringVariables;
+		std::unordered_map <std::string, int> intVariables;
+		BayesicSpace::parseCL(argc, argv, clInfo);
+		BayesicSpace::extractCLinfo(clInfo, intVariables, stringVariables);
+		BayesicSpace::ParseFASTA fastaAlign( stringVariables.at("input-file") );
+		if (stringVariables.at("impute-missing") == "set") {
+			fastaAlign.imputeMissing();
+		}
+		size_t windowSize{0};
+		if (intVariables.at("window-size") > 0) {
+			windowSize = static_cast<size_t>( intVariables.at("window-size") );
+		} else {
+			throw std::string("ERROR: window size must be > 0");
+		}
+		size_t startPosition{0};
+		if (intVariables.at("start-position") > 0) {
+			startPosition = static_cast<size_t>( intVariables.at("start-position") ) - 1;  // make position base-0
+		} else {
+			throw std::string("ERROR: start position must be greater than 1");
+		}
+		// convert to lower case in-place
+		std::transform(stringVariables.at("out-format").begin(), stringVariables.at("out-format").end(),
+				stringVariables.at("out-format").begin(), [](unsigned char letter){return std::tolower(letter);});
+		auto result{fastaAlign.extractWindow(startPosition, windowSize)};
+		std::fstream outStream;
+		outStream.open(stringVariables.at("out-file"), std::ios::out);
+		BayesicSpace::saveUniqueSequences(result, stringVariables.at("out-format"), outStream);
+		outStream.close();
+	} catch(std::string &problem) {
+		std::cerr << problem << "\n";
+		std::cerr << cliHelp;
+		return 1;
+	}
+}

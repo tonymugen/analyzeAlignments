@@ -36,8 +36,8 @@
 int main(int argc, char *argv[]) {
 	const std::string cliHelp = "Available command line flags (in any order):\n"
 		"  --input-file      file_name (input file name; required).\n"
-		"  --window-size     window_size (window size for similarity estimates; required).\n"
-		"  --step-size       step_size (step size for similarity estimates; required).\n"
+		"  --window-size     window_size (window size for similarity estimates; defaults to 100).\n"
+		"  --step-size       step_size (step size for similarity estimates; defaults to 10).\n"
 		"  --impute-missing  if set (with no value) replaces missing values with the consensus nucleotide.\n"
 		"  --out-file        file_name (output file name; required).\n";
 	try {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 			throw std::string("ERROR: window size must be > 0");
 		}
 		size_t stepSize{0};
-		if (intVariables.at("window-size") > 0) {
+		if (intVariables.at("step-size") > 0) {
 			stepSize = static_cast<size_t>( intVariables.at("step-size") );
 		} else {
 			throw std::string("ERROR: step size must be > 0");

@@ -29,8 +29,6 @@
 
 #include <array>
 
-#include <iostream>
-
 #include "extraFunctions.hpp"
 
 using namespace BayesicSpace;
@@ -63,18 +61,19 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 	intVariables.clear();
 	stringVariables.clear();
 	const std::array<std::string, 2> requiredStringVariables{"input-file", "out-file"};
-	const std::array<std::string, 1> optionalStringVariables{"impute-missing"};
-	const std::array<std::string, 2> requiredIntVariables{"window-size", "step-size"};
-	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"} };
+	const std::array<std::string, 2> optionalStringVariables{"impute-missing", "out-format"};
+	const std::array<std::string, 3> optionalIntVariables{"start-position", "window-size", "step-size"};
+	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"}, {"out-format", "tab"} };
+	const std::unordered_map<std::string, int> defaultIntValues{ {"start-position", 1}, {"window-size", 100}, {"step-size", 10} };
 
 	if ( parsedCLI.empty() ) {
 		throw std::string("No command line flags specified;");
 	}
-	for (const auto &eachFlag : requiredIntVariables) {
+	for (const auto &eachFlag : optionalIntVariables) {
 		try {
 			intVariables[eachFlag] = stoi( parsedCLI.at(eachFlag) );
 		} catch(const std::exception &problem) {
-			throw std::string("ERROR: " + eachFlag + " specification is required and must be an integer");
+			intVariables[eachFlag] = defaultIntValues.at(eachFlag);
 		}
 	}
 	for (const auto &eachFlag : requiredStringVariables) {
@@ -99,5 +98,23 @@ void BayesicSpace::saveDiversityTable(const std::vector< std::pair< size_t, std:
 		for (const auto &count : eachWindow.second) {
 			outFile << eachWindow.first + 1 << "\t" << count << "\n";
 		}
+	}
+}
+
+void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &fileType, std::fstream &outFile) {
+	if (fileType == "fasta") {
+		uint32_t seqIdx{1};
+		for (const auto &eachSeq : uniqueSequences) {
+			outFile << "> Sequence " << seqIdx << ": " << eachSeq.second << "\n";
+			outFile << eachSeq.first << "\n";
+			++seqIdx;
+		}
+	} else if (fileType == "tab") {
+		for (const auto &eachSeq : uniqueSequences) {
+			outFile << eachSeq.first << "\t" << eachSeq.second << "\n";
+		}
+	} else {
+		throw std::string("ERROR: output file format must be fasta or tab in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
 	}
 }
