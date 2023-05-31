@@ -1,13 +1,22 @@
 cmake_minimum_required(VERSION 3.11)
-project(analizeAlignments VERSION 0.1 LANGUAGES CXX)
+
+project(analizeAlignments 
+	VERSION 0.1 
+	LANGUAGES CXX
+	)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+	set(CMAKE_CXX_STANDARD 14)
+endif()
 
 # Adding a Profile build type
 get_property(isMultiConfig GLOBAL
 	PROPERTY GENERATOR_IS_MULTICONFIG
 )
 if(isMultiConfig)
-	if(NOT "Profile" IN_LIST CMAKE_CONFIGURATION_TYPES)
-		list(APPEND CMAKE_CONFIGURATION_TYPES Profile)
+	if(NOT "Test" IN_LIST CMAKE_CONFIGURATION_TYPES)
+		list(APPEND CMAKE_CONFIGURATION_TYPES Test)
 	endif()
 else()
 	set(allowedBuildTypes Debug Release Test)
@@ -22,6 +31,40 @@ else()
 		)
 	endif()
 endif()
+
+set(CLANG_WARNINGS
+	-Wall
+	-Wextra
+	-Wconversion
+	-Wpedantic
+	-Wshadow
+	-Wnon-virtual-dtor
+	-Wold-style-cast
+	-Wcast-align
+	-Woverloaded-virtual
+	-Wsign-conversion
+	-Wnull-dereference
+	-Wdouble-promotion
+	-Wformat=2
+	-Wimplicit-fallthrough
+)
+set(GCC_WARNINGS
+	${CLANG_WARNINGS} 
+	-Wmisleading-indentation
+	-Wduplicated-cond
+	-Wduplicated-branches
+	-Wlogical-op
+	-Wuseless-cast
+)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+	set(PROJECT_WARNINGS_CXX ${CLANG_WARNINGS})
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	set(PROJECT_WARNINGS_CXX ${GCC_WARNINGS})
+else()
+	message(AUTHOR_WARNING "No compiler warnings set for CXX compiler: ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
 set(CMAKE_CXX_FLAGS_PROFILE
 	"-g -p -O3"
 )
@@ -44,12 +87,10 @@ target_link_libraries(homoruns
 	PRIVATE analizeAlignments
 )
 target_compile_options(homoruns
-	PRIVATE -Wall -Wextra -Wconversion -Wpedantic -Wshadow
+	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(homoruns PROPERTIES
-	CXX_STANDARD         14
 	CXX_STANDARD_REQURED ON
-	CXX_EXTENSIONS       OFF
 )
 install(TARGETS homoruns
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -65,12 +106,10 @@ target_link_libraries(extractWindow
 	PRIVATE analizeAlignments
 )
 target_compile_options(extractWindow
-	PRIVATE -Wall -Wextra -Wconversion -Wpedantic -Wshadow
+	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(extractWindow PROPERTIES
-	CXX_STANDARD         14
 	CXX_STANDARD_REQURED ON
-	CXX_EXTENSIONS       OFF
 )
 install(TARGETS extractWindow
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -89,12 +128,10 @@ set_target_properties(analizeAlignments PROPERTIES
 	POSITION_INDEPENDENT_CODE ON
 )
 target_compile_options(analizeAlignments
-	PRIVATE -Wall -Wextra -Wconversion -Wpedantic -Wshadow
+	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(analizeAlignments PROPERTIES
-	CXX_STANDARD         14
 	CXX_STANDARD_REQURED ON
-	CXX_EXTENSIONS       OFF
 )
 # no install for now
 

@@ -80,7 +80,7 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 		try {
 			stringVariables[eachFlag] = parsedCLI.at(eachFlag);
 		} catch(const std::exception &problem) {
-			throw std::string("ERROR: " + eachFlag + " specification is required");
+			throw std::string("ERROR: ") + eachFlag + std::string(" specification is required");
 		}
 	}
 	for (const auto &eachFlag : optionalStringVariables) {
