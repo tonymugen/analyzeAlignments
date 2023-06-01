@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
+include(CheckCXXCompilerFlag)
 
 project(analizeAlignments 
 	VERSION 0.1 
@@ -32,6 +33,9 @@ else()
 	endif()
 endif()
 
+#
+# Set warnings
+#
 set(CLANG_WARNINGS
 	-Wall
 	-Wextra
@@ -65,6 +69,30 @@ else()
 	message(AUTHOR_WARNING "No compiler warnings set for CXX compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+#
+# Find active available sanitizers
+#
+set(SANITIZER_LIST "")
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	set(SANITIZERS "")
+	check_cxx_compiler_flag(-fsanitize=address   HAS_ADDRESS_SANITIZER)
+	check_cxx_compiler_flag(-fsanitize=leak      HAS_LEAK_SANITIZER)
+	check_cxx_compiler_flag(-fsanitize=undefined HAS_UNDEFINED_SANITIZER)
+	if(${HAS_ADDRESS_SANITIZER})
+		list(APPEND SANITIZERS "address")
+	endif()
+	if(${HAS_LEAK_SANITIZER})
+		list(APPEND SANITIZERS "leak")
+	endif()
+	if(${HAS_UNDEFINED_SANITIZER})
+		list(APPEND SANITIZERS "undefined")
+	endif()
+	list(JOIN
+		SANITIZERS
+		","
+		SANITIZER_LIST)
+endif()
+
 set(CMAKE_CXX_FLAGS_PROFILE
 	"-g -p -O3"
 )
@@ -73,6 +101,26 @@ set(CMAKE_CXX_SHARED_LINKER_FLAGS_PROFILE
 )
 set(CMAKE_CXX_STATIC_LINKER_FLAGS_PROFILE
 	"-g -p -O3"
+)
+
+set(CMAKE_CXX_FLAGS_DEBUG
+	"-g -O1 -fsanitize=${SANITIZER_LIST}"
+)
+set(CMAKE_CXX_SHARED_LINKER_FLAGS_DEBUG
+	"-g -O1 -fsanitize=${SANITIZER_LIST}"
+)
+set(CMAKE_CXX_STATIC_LINKER_FLAGS_DEBUG
+	"-g -O1 -fsanitize=${SANITIZER_LIST}"
+)
+
+set(CMAKE_CXX_FLAGS_TEST
+	"-g -O3 -fsanitize=${SANITIZER_LIST}"
+)
+set(CMAKE_CXX_SHARED_LINKER_FLAGS_TEST
+	"-g -O3 -fsanitize=${SANITIZER_LIST}"
+)
+set(CMAKE_CXX_STATIC_LINKER_FLAGS_TEST
+	"-g -O3 -fsanitize=${SANITIZER_LIST}"
 )
 
 include(GNUInstallDirs)
