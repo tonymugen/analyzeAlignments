@@ -34,6 +34,8 @@
 #include <fstream>
 #include <algorithm>
 
+#include <iostream>
+
 #include "fastaParser.hpp"
 
 using namespace BayesicSpace;
@@ -90,6 +92,8 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 		}
 	}
 	fastaFile.close();
+	makeConsensus_();
+	std::cout << consensus_ << "\n";
 }
 
 ParseFASTA::ParseFASTA(const ParseFASTA &toCopy) {
@@ -103,6 +107,7 @@ ParseFASTA::ParseFASTA(ParseFASTA &&toMove) noexcept {
 ParseFASTA& ParseFASTA::operator=(const ParseFASTA &toCopy) {
 	if (this != &toCopy) {
 		fastaAlignment_ = toCopy.fastaAlignment_;
+		consensus_      = toCopy.consensus_;
 	}
 	return *this;
 }
@@ -110,11 +115,12 @@ ParseFASTA& ParseFASTA::operator=(const ParseFASTA &toCopy) {
 ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 	if (this != &toMove) {
 		fastaAlignment_ = std::move(toMove.fastaAlignment_);
+		consensus_      = std::move(toMove.consensus_);
 	}
 	return *this;
 }
 
-std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) {
+std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) const {
 	std::vector< std::pair< size_t, std::vector<uint32_t> > > result;
 	size_t windowStart{0};
 	size_t windowEnd{windowSize};
@@ -135,7 +141,7 @@ std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityI
 	return result;
 }
 
-std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t &windowStartPosition, const size_t &windowSize) {
+std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t &windowStartPosition, const size_t &windowSize) const {
 	std::unordered_map<std::string, uint32_t> result;
 	for (const auto &eachSeq : fastaAlignment_) {
 		++result[eachSeq.second.substr(windowStartPosition, windowSize)];
@@ -168,6 +174,29 @@ void ParseFASTA::imputeMissing() {
 			});
 		for (const auto &missingPos : missingNucPositions) {
 			fastaAlignment_.at(missingPos).second.at(iNuc) = maxCountIt->first;
+		}
+	}
+}
+
+void ParseFASTA::makeConsensus_() {
+	const size_t alignLength = this->alignmentLength();
+	const std::string standardNucleotides("ACTGN-");
+	for (size_t iNuc = 0; iNuc < alignLength; ++iNuc) {
+		std::unordered_map<char, uint32_t> nucleotides;
+		for (const auto &eachSeq : fastaAlignment_) {
+			char curNucleotide{eachSeq.second.at(iNuc)};
+			const auto cnPos = standardNucleotides.find_first_of(curNucleotide);
+			if (cnPos == std::string::npos) {
+				curNucleotide = 'N';
+			}
+			++nucleotides[curNucleotide];
+		}
+		auto maxCountIt = std::max_element(nucleotides.begin(), nucleotides.end(), 
+			[](std::pair<char, uint32_t> count1, std::pair<char, uint32_t> count2){
+				return	count1.second < count2.second;
+			});
+		if (maxCountIt != nullptr) {
+			consensus_.push_back(maxCountIt->first);
 		}
 	}
 }

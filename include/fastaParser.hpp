@@ -96,7 +96,7 @@ namespace BayesicSpace {
 		 * \param[in] stepSize window movement steps in base pairs
 		 * \return vector of pairs that contain window start positions and unique sequence counts
 		 */
-		std::vector< std::pair< size_t, std::vector<uint32_t> > > diversityInWindows(const size_t &windowSize, const size_t &stepSize);
+		std::vector< std::pair< size_t, std::vector<uint32_t> > > diversityInWindows(const size_t &windowSize, const size_t &stepSize) const;
 		/** \brief Extract an alignment window
 		 *
 		 * Calculate the number of different sequences in a window.
@@ -106,7 +106,7 @@ namespace BayesicSpace {
 		 * \param[in] windowSize window size in base pairs
 		 * \return map of sequences to the number of times each occurs in the alignment
 		 */
-		std::unordered_map<std::string, uint32_t> extractWindow(const size_t &windowStartPosition, const size_t &windowSize);
+		std::unordered_map<std::string, uint32_t> extractWindow(const size_t &windowStartPosition, const size_t &windowSize) const;
 		/** \brief Impute missing values
 		 *
 		 * Replaces missing (N or other variants, e.g. Y, S, etc.) nucleotides with the consensus value.
@@ -119,5 +119,13 @@ namespace BayesicSpace {
 		 * The first string in the pair is the FASTA header, the second is the sequence without line breaks.
 		 */
 		std::vector< std::pair<std::string, std::string> > fastaAlignment_;
+		/** \brief Consensus sequence */
+		std::string consensus_;
+		/** \brief Generate the consensus sequence 
+		 *
+		 * Generates the majority consensus sequence, converting non-A, T, C, G, and - characters to N.
+		 * The consensus is always upper case.
+		 */
+		void makeConsensus_();
 	};
 }
