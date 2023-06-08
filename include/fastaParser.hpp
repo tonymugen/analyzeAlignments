@@ -33,6 +33,7 @@
 #include <unordered_map>
 #include <utility> // for std::pair
 #include <string>
+#include <iterator>
 #include <cstdint>
 
 namespace BayesicSpace {
@@ -87,6 +88,14 @@ namespace BayesicSpace {
 		 * \return alignment length
 		 */
 		size_t alignmentLength() const {return fastaAlignment_.at(0).second.size(); };
+		/** \brief Extract a consensus region 
+		 *
+		 * Extract a window of the consensus sequence.
+		 *
+		 * \param[in] startIdx index of the window start
+		 * \param[in] windowLength number of nucleotides in the window
+		 */
+		std::string extractConsensusWindow(const size_t &startIdx, const size_t &windowLength) const;
 		/** \brief Sequence diversity in windows 
 		 *
 		 * Calculate the number of different sequences in window sliding along a sequence alignment.
@@ -123,7 +132,7 @@ namespace BayesicSpace {
 		std::string consensus_;
 		/** \brief Generate the consensus sequence 
 		 *
-		 * Generates the majority consensus sequence, converting non-A, T, C, G, and - characters to N.
+		 * Generates the majority (non-missing residues) consensus sequence.
 		 * The consensus is always upper case.
 		 */
 		void makeConsensus_();

@@ -28,6 +28,8 @@
  */
 
 #include <array>
+#include <algorithm>
+#include <iterator>
 
 #include "extraFunctions.hpp"
 
@@ -101,17 +103,32 @@ void BayesicSpace::saveDiversityTable(const std::vector< std::pair< size_t, std:
 	}
 }
 
-void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &fileType, std::fstream &outFile) {
+void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus, const std::string &fileType, std::fstream &outFile) {
 	if (fileType == "fasta") {
 		uint32_t seqIdx{1};
+		outFile << "> Consensus\n";
+		outFile << consensus << "\n";
 		for (const auto &eachSeq : uniqueSequences) {
+			std::string diffs;
+			std::transform(
+				eachSeq.first.cbegin(), eachSeq.first.cend(),
+				consensus.cbegin(), 
+				std::back_inserter(diffs), 
+				[](unsigned char nuc1, unsigned char nuc2){return std::toupper(nuc1) == std::toupper(nuc2) ? '.' : std::toupper(nuc1);});
 			outFile << "> Sequence " << seqIdx << ": " << eachSeq.second << "\n";
-			outFile << eachSeq.first << "\n";
+			outFile << diffs << "\n";
 			++seqIdx;
 		}
 	} else if (fileType == "tab") {
+		outFile << consensus << "\t" << "C\n";
 		for (const auto &eachSeq : uniqueSequences) {
-			outFile << eachSeq.first << "\t" << eachSeq.second << "\n";
+			std::string diffs;
+			std::transform(
+				eachSeq.first.cbegin(), eachSeq.first.cend(),
+				consensus.cbegin(), 
+				std::back_inserter(diffs), 
+				[](unsigned char nuc1, unsigned char nuc2){return std::toupper(nuc1) == std::toupper(nuc2) ? '.' : std::toupper(nuc1);});
+			outFile << diffs << "\t" << eachSeq.second << "\n";
 		}
 	} else {
 		throw std::string("ERROR: output file format must be fasta or tab in ") +

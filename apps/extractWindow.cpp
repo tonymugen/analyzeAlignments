@@ -64,13 +64,14 @@ int main(int argc, char *argv[]) {
 		} else {
 			throw std::string("ERROR: start position must be greater than 1");
 		}
+		std::string consensusWindow{fastaAlign.extractConsensusWindow(startPosition, windowSize)};
 		// convert to lower case in-place
 		std::transform(stringVariables.at("out-format").begin(), stringVariables.at("out-format").end(),
 				stringVariables.at("out-format").begin(), [](unsigned char letter){return std::tolower(letter);});
 		auto result{fastaAlign.extractWindow(startPosition, windowSize)};
 		std::fstream outStream;
 		outStream.open(stringVariables.at("out-file"), std::ios::out);
-		BayesicSpace::saveUniqueSequences(result, stringVariables.at("out-format"), outStream);
+		BayesicSpace::saveUniqueSequences(result, consensusWindow, stringVariables.at("out-format"), outStream);
 		outStream.close();
 	} catch(std::string &problem) {
 		std::cerr << problem << "\n";

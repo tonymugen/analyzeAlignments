@@ -70,10 +70,12 @@ namespace BayesicSpace {
 	 * Save unique sequences in an alignment window.
 	 * If in FASTA format, the number of times each sequence appears in an alignment is in the header.
 	 * If in TAB format, sequence and the number of occurrences are on the same line, separated by a tab.
+	 * The consensus is displayed on the top line. Nucleotides that are the same as the consensus are displayed as '.', the different residues are shown.
 	 *
 	 * \param[in] uniqueSequences table of unique sequences and their counts
+	 * \param[in] consensus consensus sequence for the window
 	 * \param[in] fileType TAB or FASTA, otherwise throws
 	 * \param[in,out] outFile output stream
 	 */
-	void saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &fileType, std::fstream &outFile);
+	void saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus, const std::string &fileType, std::fstream &outFile);
 }

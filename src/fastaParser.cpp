@@ -27,14 +27,13 @@
  *
  */
 
+#include <iterator>
 #include <vector>
 #include <unordered_map>
 #include <utility> // for std::pair
 #include <string>
 #include <fstream>
 #include <algorithm>
-
-#include <iostream>
 
 #include "fastaParser.hpp"
 
@@ -93,7 +92,6 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 	}
 	fastaFile.close();
 	makeConsensus_();
-	std::cout << consensus_ << "\n";
 }
 
 ParseFASTA::ParseFASTA(const ParseFASTA &toCopy) {
@@ -118,6 +116,13 @@ ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 		consensus_      = std::move(toMove.consensus_);
 	}
 	return *this;
+}
+
+std::string ParseFASTA::extractConsensusWindow(const size_t &startIdx, const size_t &windowLength) const {
+	std::string window;
+	auto first = consensus_.cbegin() + static_cast<std::string::difference_type>(startIdx);
+	std::copy_n( first, windowLength, std::back_inserter(window) );
+	return window;
 }
 
 std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityInWindows(const size_t &windowSize, const size_t &stepSize) const {
@@ -150,52 +155,37 @@ std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t
 }
 
 void ParseFASTA::imputeMissing() {
-	const size_t alignLength = this->alignmentLength();
-	const std::string standardNucleotides("ACTGN-");
-	for (size_t iNuc = 0; iNuc < alignLength; ++iNuc) {
-		std::unordered_map<char, uint32_t> nucleotides;
-		std::vector<size_t> missingNucPositions;
-		size_t iSeq{0};
-		for (const auto &eachSeq : fastaAlignment_) {
-			char curNucleotide{eachSeq.second.at(iNuc)};
-			const auto cnPos = standardNucleotides.find_first_of(curNucleotide);
-			if (cnPos == std::string::npos) {
-				curNucleotide = 'N';
-			}
-			if (curNucleotide == 'N') {
-				missingNucPositions.push_back(iSeq);
-			}
-			++nucleotides[curNucleotide];
-			++iSeq;
-		}
-		auto maxCountIt = std::max_element(nucleotides.begin(), nucleotides.end(), 
-			[](std::pair<char, uint32_t> count1, std::pair<char, uint32_t> count2){
-				return	count1.second < count2.second;
+	const std::string standardNucleotides("AaCcTtGg-");
+	for (auto &eachSeq : fastaAlignment_) {
+		std::transform(
+			eachSeq.second.cbegin(), eachSeq.second.cend(),
+			consensus_.cbegin(),
+			eachSeq.second.begin(),
+			[&standardNucleotides](char nuc1, char nuc2){
+				return standardNucleotides.find_first_of(nuc1)== std::string::npos ? nuc2 : nuc1;
 			});
-		for (const auto &missingPos : missingNucPositions) {
-			fastaAlignment_.at(missingPos).second.at(iNuc) = maxCountIt->first;
-		}
 	}
 }
 
 void ParseFASTA::makeConsensus_() {
 	const size_t alignLength = this->alignmentLength();
-	const std::string standardNucleotides("ACTGN-");
+	const std::string standardNucleotides("AaCcTtGgNn-");
 	for (size_t iNuc = 0; iNuc < alignLength; ++iNuc) {
 		std::unordered_map<char, uint32_t> nucleotides;
 		for (const auto &eachSeq : fastaAlignment_) {
 			char curNucleotide{eachSeq.second.at(iNuc)};
 			const auto cnPos = standardNucleotides.find_first_of(curNucleotide);
-			if (cnPos == std::string::npos) {
-				curNucleotide = 'N';
+			if (cnPos != std::string::npos) {
+				++nucleotides[curNucleotide];
 			}
-			++nucleotides[curNucleotide];
 		}
 		auto maxCountIt = std::max_element(nucleotides.begin(), nucleotides.end(), 
 			[](std::pair<char, uint32_t> count1, std::pair<char, uint32_t> count2){
 				return	count1.second < count2.second;
 			});
-		if (maxCountIt != nullptr) {
+		if (maxCountIt == nullptr) {
+			consensus_.push_back('N');
+		} else {
 			consensus_.push_back(maxCountIt->first);
 		}
 	}
