@@ -3,7 +3,7 @@ include(CheckCXXCompilerFlag)
 
 project(analizeAlignments 
 	VERSION 0.1 
-	LANGUAGES CXX
+	LANGUAGES CXX C
 	)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -167,16 +167,19 @@ install(TARGETS extractWindow
 add_library(analizeAlignments
 	src/fastaParser.cpp
 	src/extraFunctions.cpp
+	externals/stripedSW/src/ssw.c
+	externals/stripedSW/src/ssw_cpp.cpp
 )
 
 target_include_directories(analizeAlignments
 	PRIVATE include
+	PRIVATE externals/stripedSW/src
 )
 set_target_properties(analizeAlignments PROPERTIES
 	POSITION_INDEPENDENT_CODE ON
 )
 target_compile_options(analizeAlignments
-	PRIVATE ${PROJECT_WARNINGS_CXX}
+	PRIVATE ${PROJECT_WARNINGS_CXX} -msse2
 )
 set_target_properties(analizeAlignments PROPERTIES
 	CXX_STANDARD_REQURED ON

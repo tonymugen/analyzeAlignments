@@ -30,6 +30,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <string>
 
 #include "extraFunctions.hpp"
 #include "fastaParser.hpp"
@@ -40,6 +41,8 @@ int main(int argc, char *argv[]) {
 		"  --start-position  start_position (window start position; defaults to 1, first nucleotide).\n"
 		"  --window-size     window_size (window size for similarity estimates; required).\n"
 		"  --impute-missing  if set (with no value) replaces missing values with the consensus nucleotide.\n"
+		"  --query-sequence  a FASTA file with a query sequence to extract a window containing its best match;\n"
+		"                    if provided, the --start-position and --window-size flags are ingnored.\n"
 		"  --out-format      output file format (FASTA or TAB case-insensitive; defaults to TAB).\n"
 		"  --out-file        file_name (output file name; required).\n";
 	try {
@@ -53,16 +56,34 @@ int main(int argc, char *argv[]) {
 			fastaAlign.imputeMissing();
 		}
 		size_t windowSize{0};
-		if (intVariables.at("window-size") > 0) {
-			windowSize = static_cast<size_t>( intVariables.at("window-size") );
-		} else {
-			throw std::string("ERROR: window size must be > 0");
-		}
 		size_t startPosition{0};
-		if (intVariables.at("start-position") > 0) {
-			startPosition = static_cast<size_t>( intVariables.at("start-position") ) - 1;  // make position base-0
+		if (stringVariables.at("query-sequence") == "unset") {
+			if (intVariables.at("window-size") > 0) {
+				windowSize = static_cast<size_t>( intVariables.at("window-size") );
+			} else {
+				throw std::string("ERROR: window size must be > 0");
+			}
+			if (intVariables.at("start-position") > 0) {
+				startPosition = static_cast<size_t>( intVariables.at("start-position") ) - 1;  // make position base-0
+			} else {
+				throw std::string("ERROR: start position must be greater than 1");
+			}
 		} else {
-			throw std::string("ERROR: start position must be greater than 1");
+			std::fstream fastaQueryFile;
+			std::string fastaQueryLine;
+			fastaQueryFile.open(stringVariables.at("query-sequence"), std::ios::in);
+			std::getline(fastaQueryFile, fastaQueryLine); 
+			if (fastaQueryLine[0] != '>') {
+				throw std::string("ERROR: file ") + stringVariables.at("query-sequence") + std::string(" does not appear to be a FASTA file (no > on the first line)");
+			}
+			std::string querySequence;
+			while ( std::getline(fastaQueryFile, fastaQueryLine) ) {
+				querySequence += fastaQueryLine;
+			}
+			fastaQueryFile.close();
+			std::pair<size_t, size_t> windowParams{fastaAlign.extractSequence(querySequence)};
+			startPosition = windowParams.first;
+			windowSize    = windowParams.second;
 		}
 		std::string consensusWindow{fastaAlign.extractConsensusWindow(startPosition, windowSize)};
 		// convert to lower case in-place

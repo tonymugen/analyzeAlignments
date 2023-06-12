@@ -63,9 +63,9 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 	intVariables.clear();
 	stringVariables.clear();
 	const std::array<std::string, 2> requiredStringVariables{"input-file", "out-file"};
-	const std::array<std::string, 2> optionalStringVariables{"impute-missing", "out-format"};
+	const std::array<std::string, 3> optionalStringVariables{"impute-missing", "out-format", "query-sequence"};
 	const std::array<std::string, 3> optionalIntVariables{"start-position", "window-size", "step-size"};
-	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"}, {"out-format", "tab"} };
+	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"}, {"out-format", "tab"}, {"query-sequence", "unset"} };
 	const std::unordered_map<std::string, int> defaultIntValues{ {"start-position", 1}, {"window-size", 100}, {"step-size", 10} };
 
 	if ( parsedCLI.empty() ) {

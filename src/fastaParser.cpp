@@ -36,6 +36,9 @@
 #include <algorithm>
 
 #include "fastaParser.hpp"
+#include "ssw_cpp.h"
+
+#include <iostream>
 
 using namespace BayesicSpace;
 
@@ -54,7 +57,7 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 		throw std::string("ERROR: file ") + fastaFileName + std::string(" does not appear to be a FASTA file (no > on the first line) in ") +
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
 	}
-	fastaLine.erase(0, 1);                                                                       // erase the ">" at the beginning
+	fastaLine.erase(0, 1);                                                                               // erase the ">" at the beginning
 	const auto firstNonSpace = fastaLine.find_first_not_of(' ');
 	if (firstNonSpace == std::string::npos) {
 		throw std::string("ERROR: some non-space characters required in a FASTA header in ") +
@@ -80,7 +83,7 @@ ParseFASTA::ParseFASTA(const std::string &fastaFileName) {
 		}
 	}
 	if (fastaAlignment_.size() < 2) {
-		throw std::string("ERROR: alignment file ") + fastaFileName + std::string(" must have at least to sequence records in ") +
+		throw std::string("ERROR: alignment file ") + fastaFileName + std::string(" must have at least two sequence records in ") +
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
 	}
 	const size_t alignmentSize = fastaAlignment_[0].second.size();
@@ -151,6 +154,28 @@ std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t
 	for (const auto &eachSeq : fastaAlignment_) {
 		++result[eachSeq.second.substr(windowStartPosition, windowSize)];
 	}
+	return result;
+}
+
+std::pair<size_t, size_t> ParseFASTA::extractSequence(const std::string &querySequence) const {
+	static const int32_t minMaskLen{15};
+	int32_t maskLen{static_cast<int32_t>(querySequence.size() / 2)};
+	maskLen = maskLen < minMaskLen ? minMaskLen : maskLen;
+	StripedSmithWaterman::Aligner aligner;
+	StripedSmithWaterman::Filter filter;
+	StripedSmithWaterman::Alignment alignment;
+	aligner.Align(querySequence.c_str(), consensus_.c_str(), static_cast<int32_t>( consensus_.size() ), filter, &alignment, maskLen);
+	std::cout << "ref begin: " << alignment.ref_begin << "; ref end: " << alignment.ref_end << "\n";
+	std::cout << "query begin: " << alignment.query_begin << "; query end: " << alignment.query_end << "\n";
+	if (alignment.ref_begin < 0) {
+		throw std::string("ERROR: matching reference start value cannot be negative in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+	if (alignment.ref_end < alignment.ref_begin) {
+		throw std::string("ERROR: matching reference end must be greater than start in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+	std::pair<size_t, size_t> result{static_cast<size_t>(alignment.ref_begin), static_cast<size_t>(alignment.ref_end - alignment.ref_begin)};
 	return result;
 }
 

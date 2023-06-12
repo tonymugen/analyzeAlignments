@@ -116,6 +116,15 @@ namespace BayesicSpace {
 		 * \return map of sequences to the number of times each occurs in the alignment
 		 */
 		std::unordered_map<std::string, uint32_t> extractWindow(const size_t &windowStartPosition, const size_t &windowSize) const;
+		/** \brief Extract a region matching a sequence 
+		 *
+		 * Report all unique sequences (and their counts) matching the query sequence.
+		 * Matching performed using striped Smith-Waterman alignment.
+		 *
+		 * \param[in] querySequence the query sequence
+		 * \return matching window start and length
+		 */
+		std::pair<size_t, size_t> extractSequence(const std::string &querySequence) const;
 		/** \brief Impute missing values
 		 *
 		 * Replaces missing (N or other variants, e.g. Y, S, etc.) nucleotides with the consensus value.
