@@ -1,3 +1,6 @@
 [submodule "stripedSW"]
-	path = externals/Complete-Striped-Smith-Waterman-Library/
+	path = externals/stripedSW/
+	url = https://github.com/mengyao/Complete-Striped-Smith-Waterman-Library
+[submodule "externals/stripedSW"]
+	path = externals/stripedSW
 	url = https://github.com/mengyao/Complete-Striped-Smith-Waterman-Library
