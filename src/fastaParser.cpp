@@ -157,7 +157,7 @@ std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t
 	return result;
 }
 
-std::pair<size_t, size_t> ParseFASTA::extractSequence(const std::string &querySequence) const {
+AlignmentStatistics ParseFASTA::extractSequence(const std::string &querySequence) const {
 	static const int32_t minMaskLen{15};
 	int32_t maskLen{static_cast<int32_t>(querySequence.size() / 2)};
 	maskLen = maskLen < minMaskLen ? minMaskLen : maskLen;
@@ -165,8 +165,6 @@ std::pair<size_t, size_t> ParseFASTA::extractSequence(const std::string &querySe
 	StripedSmithWaterman::Filter filter;
 	StripedSmithWaterman::Alignment alignment;
 	aligner.Align(querySequence.c_str(), consensus_.c_str(), static_cast<int32_t>( consensus_.size() ), filter, &alignment, maskLen);
-	std::cout << "ref begin: " << alignment.ref_begin << "; ref end: " << alignment.ref_end << "\n";
-	std::cout << "query begin: " << alignment.query_begin << "; query end: " << alignment.query_end << "\n";
 	if (alignment.ref_begin < 0) {
 		throw std::string("ERROR: matching reference start value cannot be negative in ") +
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
@@ -175,7 +173,20 @@ std::pair<size_t, size_t> ParseFASTA::extractSequence(const std::string &querySe
 		throw std::string("ERROR: matching reference end must be greater than start in ") +
 			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
 	}
-	std::pair<size_t, size_t> result{static_cast<size_t>(alignment.ref_begin), static_cast<size_t>(alignment.ref_end - alignment.ref_begin)};
+	if (alignment.query_begin < 0) {
+		throw std::string("ERROR: query start value cannot be negative in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+	if (alignment.query_end < alignment.query_begin) {
+		throw std::string("ERROR: query end must be greater than start in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+	AlignmentStatistics result{
+		static_cast<size_t>(alignment.ref_begin),
+		static_cast<size_t>(alignment.ref_end - alignment.ref_begin),
+		static_cast<size_t>(alignment.query_begin),
+		static_cast<size_t>(alignment.query_end - alignment.query_begin),
+	};
 	return result;
 }
 

@@ -37,8 +37,19 @@
 #include <cstdint>
 
 namespace BayesicSpace {
+	struct AlignmentStatistics;
 	class ParseFASTA;
 
+	/** \brief Collection of alignment statistics 
+	 *
+	 * Collects striped Smith-Waterman alignment statistics.
+	 */
+	struct AlignmentStatistics {
+		size_t referenceStart;
+		size_t referenceLength;
+		size_t queryStart;
+		size_t queryLength;
+	};
 	/** \brief FASTA alignment parser
 	 *
 	 * Reads a FASTA alignment file, separates the sequences and headers, and provides analysis methods.
@@ -124,7 +135,7 @@ namespace BayesicSpace {
 		 * \param[in] querySequence the query sequence
 		 * \return matching window start and length
 		 */
-		std::pair<size_t, size_t> extractSequence(const std::string &querySequence) const;
+		AlignmentStatistics extractSequence(const std::string &querySequence) const;
 		/** \brief Impute missing values
 		 *
 		 * Replaces missing (N or other variants, e.g. Y, S, etc.) nucleotides with the consensus value.
