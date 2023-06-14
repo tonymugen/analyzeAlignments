@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 			auto result{fastaAlign.extractWindow(startPosition, windowSize)};
 			std::fstream outStream;
 			outStream.open(stringVariables.at("out-file"), std::ios::out);
-			BayesicSpace::saveUniqueSequences(result, consensusWindow, querySequence, stringVariables.at("out-format"), outStream);
+			BayesicSpace::saveUniqueSequences(result, consensusWindow, windowParams, querySequence, stringVariables.at("out-format"), outStream);
 			outStream.close();
 		}
 	} catch(std::string &problem) {

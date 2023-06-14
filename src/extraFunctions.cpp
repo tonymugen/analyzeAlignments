@@ -136,12 +136,14 @@ void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uin
 	}
 }
 
-void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus, const std::string &query, const std::string &fileType, std::fstream &outFile) {
+void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus,
+								const AlignmentStatistics &alignStats, const std::string &query,
+								const std::string &fileType, std::fstream &outFile) {
 	if (fileType == "fasta") {
 		uint32_t seqIdx{1};
 		outFile << "> Query \n";
 		outFile << query << "\n";
-		outFile << "> Consensus\n";
+		outFile << "> Consensus; start: " << alignStats.referenceStart << "; length: " << alignStats.referenceLength << "\n";
 		outFile << consensus << "\n";
 		for (const auto &eachSeq : uniqueSequences) {
 			std::string diffs;
@@ -156,7 +158,7 @@ void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uin
 		}
 	} else if (fileType == "tab") {
 		outFile << query     << "\t" << "Q\n";
-		outFile << consensus << "\t" << "C\n";
+		outFile << consensus << "\t" << "C|" << alignStats.referenceStart << "|" << alignStats.referenceLength <<"\n";
 		for (const auto &eachSeq : uniqueSequences) {
 			std::string diffs;
 			std::transform(
