@@ -68,7 +68,24 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 else()
 	message(AUTHOR_WARNING "No compiler warnings set for CXX compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
+#
+# Tests with Catch2
+#
+option(BUILD_TESTS
+	"Build tests"
+	OFF
+)
+if(BUILD_TESTS)
+	Include(FetchContent)
 
+	FetchContent_Declare(
+	  Catch2
+	  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+	  GIT_TAG        v3.3.2 # or a later release
+	)
+	FetchContent_MakeAvailable(Catch2)
+	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+endif()
 #
 # Find active available sanitizers
 #
@@ -164,25 +181,58 @@ install(TARGETS extractWindow
 )
 
 # library
-add_library(analizeAlignments
-	src/fastaParser.cpp
-	src/extraFunctions.cpp
+add_library(smithWaterman
 	externals/stripedSW/src/ssw.c
 	externals/stripedSW/src/ssw_cpp.cpp
 )
+target_include_directories(smithWaterman
+	PRIVATE externals/stripedSW/src
+)
+set_target_properties(smithWaterman PROPERTIES
+	POSITION_INDEPENDENT_CODE ON
+)
+target_compile_options(smithWaterman
+	PRIVATE -msse2
+)
+set_target_properties(smithWaterman PROPERTIES
+	CXX_STANDARD_REQURED ON
+)
 
+add_library(analizeAlignments
+	src/fastaParser.cpp
+	src/extraFunctions.cpp
+)
 target_include_directories(analizeAlignments
 	PRIVATE include
 	PRIVATE externals/stripedSW/src
+)
+target_link_libraries(analizeAlignments
+	PRIVATE smithWaterman
 )
 set_target_properties(analizeAlignments PROPERTIES
 	POSITION_INDEPENDENT_CODE ON
 )
 target_compile_options(analizeAlignments
-	PRIVATE ${PROJECT_WARNINGS_CXX} -msse2
+	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(analizeAlignments PROPERTIES
 	CXX_STANDARD_REQURED ON
 )
 # no install for now
 
+# tests
+if(BUILD_TESTS)
+	add_executable(tests
+		tests/tests.cpp
+	)
+	target_link_libraries(tests
+		PRIVATE analizeAlignments
+		PRIVATE Catch2::Catch2WithMain
+	)
+	target_include_directories(tests
+		PRIVATE include
+	)
+	include(CTest)
+	include(Catch)
+	catch_discover_tests(tests)
+endif()
