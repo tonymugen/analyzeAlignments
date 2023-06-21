@@ -122,6 +122,10 @@ ParseFASTA& ParseFASTA::operator=(ParseFASTA &&toMove) noexcept {
 }
 
 std::string ParseFASTA::extractConsensusWindow(const size_t &startIdx, const size_t &windowLength) const {
+	if ( startIdx >= consensus_.size() ) {
+		throw std::string("ERROR: window start is past alignment length in " ) +
+				std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
 	std::string window;
 	auto first = consensus_.cbegin() + static_cast<std::string::difference_type>(startIdx);
 	std::copy_n( first, windowLength, std::back_inserter(window) );
