@@ -154,6 +154,10 @@ std::vector< std::pair< size_t, std::vector<uint32_t> > > ParseFASTA::diversityI
 }
 
 std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t &windowStartPosition, const size_t &windowSize) const {
+	if ( windowStartPosition >= this->alignmentLength() ) {
+		throw std::string("ERROR: window start is past alignment length in " ) +
+				std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
 	std::unordered_map<std::string, uint32_t> result;
 	for (const auto &eachSeq : fastaAlignment_) {
 		++result[eachSeq.second.substr(windowStartPosition, windowSize)];

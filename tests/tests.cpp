@@ -32,6 +32,7 @@
 #include <numeric>
 #include <algorithm>
 #include <unordered_map>
+#include <fstream>
 
 #include <iostream>
 
@@ -67,8 +68,29 @@ TEST_CASE("A FASTA file is properly parsed", "[parser]") { // NOLINT
 			sumNseq.emplace_back(std::accumulate(window.second.begin(), window.second.end(), uint32_t{0}) );
 		}
 		const auto minMaxSeqCount = std::minmax_element( sumNseq.begin(), sumNseq.end() );
+		// The sum of sequence counts must be the same for all windows and equal to the total number of sequences
 		REQUIRE( (*minMaxSeqCount.first) == (*minMaxSeqCount.second) );
 		REQUIRE((*minMaxSeqCount.first) == nSequences);
+		const auto windowFromPosition = testParser.extractWindow(windowStart, windowSize);
+		// unique sequence counts must sum to the total number
+		uint32_t sumUnq{0};
+		for (const auto &eachSeq : windowFromPosition) {
+			sumUnq += eachSeq.second;
+		}
+		REQUIRE(sumUnq == nSequences);
+		REQUIRE_THROWS( testParser.extractWindow(tooBigStart, windowSize) );
+		std::fstream fastaQueryFile;
+		std::string fastaQueryLine;
+		fastaQueryFile.open(std::string("../tests/querySequence.fasta"), std::ios::in);
+		std::getline(fastaQueryFile, fastaQueryLine); 
+		std::string querySequence;
+		while ( std::getline(fastaQueryFile, fastaQueryLine) ) {
+			querySequence += fastaQueryLine;
+		}
+		fastaQueryFile.close();
+		const auto queryWindow = testParser.extractSequence(querySequence);
+		REQUIRE(queryWindow.referenceStart < alignLength);
+		REQUIRE(queryWindow.referenceLength <= alignLength);
 	}
 }
 
