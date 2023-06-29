@@ -155,7 +155,7 @@ target_compile_options(homoruns
 	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(homoruns PROPERTIES
-	CXX_STANDARD_REQURED ON
+	CXX_STANDARD_REQUIRED ON
 )
 install(TARGETS homoruns
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -174,7 +174,7 @@ target_compile_options(extractWindow
 	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(extractWindow PROPERTIES
-	CXX_STANDARD_REQURED ON
+	CXX_STANDARD_REQUIRED ON
 )
 install(TARGETS extractWindow
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -195,7 +195,7 @@ target_compile_options(smithWaterman
 	PRIVATE -msse2
 )
 set_target_properties(smithWaterman PROPERTIES
-	CXX_STANDARD_REQURED ON
+	CXX_STANDARD_REQUIRED ON
 )
 
 add_library(analizeAlignments
@@ -216,7 +216,7 @@ target_compile_options(analizeAlignments
 	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
 set_target_properties(analizeAlignments PROPERTIES
-	CXX_STANDARD_REQURED ON
+	CXX_STANDARD_REQUIRED ON
 )
 # no install for now
 
