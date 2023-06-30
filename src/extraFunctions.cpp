@@ -63,9 +63,9 @@ void BayesicSpace::extractCLinfo(const std::unordered_map<std::string, std::stri
 	intVariables.clear();
 	stringVariables.clear();
 	const std::array<std::string, 2> requiredStringVariables{"input-file", "out-file"};
-	const std::array<std::string, 3> optionalStringVariables{"impute-missing", "out-format", "query-sequence"};
+	const std::array<std::string, 4> optionalStringVariables{"impute-missing", "out-format", "query-sequence", "sorted"};
 	const std::array<std::string, 3> optionalIntVariables{"start-position", "window-size", "step-size"};
-	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"}, {"out-format", "tab"}, {"query-sequence", "unset"} };
+	const std::unordered_map<std::string, std::string> defaultStringValues{ {"impute-missing", "unset"}, {"out-format", "tab"}, {"query-sequence", "unset"}, {"sorted", "unset"} };
 	const std::unordered_map<std::string, int> defaultIntValues{ {"start-position", 1}, {"window-size", 100}, {"step-size", 10} };
 
 	if ( parsedCLI.empty() ) {
@@ -136,7 +136,78 @@ void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uin
 	}
 }
 
+void BayesicSpace::saveUniqueSequences(const std::vector< std::pair<std::string, uint32_t> > &uniqueSequences, const std::string &consensus, const std::string &fileType, std::fstream &outFile) {
+	if (fileType == "fasta") {
+		uint32_t seqIdx{1};
+		outFile << "> Consensus\n";
+		outFile << consensus << "\n";
+		for (const auto &eachSeq : uniqueSequences) {
+			std::string diffs;
+			std::transform(
+				eachSeq.first.cbegin(), eachSeq.first.cend(),
+				consensus.cbegin(), 
+				std::back_inserter(diffs), 
+				[](unsigned char nuc1, unsigned char nuc2){return std::toupper(nuc1) == std::toupper(nuc2) ? '.' : std::toupper(nuc1);});
+			outFile << "> Sequence " << seqIdx << ": " << eachSeq.second << "\n";
+			outFile << diffs << "\n";
+			++seqIdx;
+		}
+	} else if (fileType == "tab") {
+		outFile << consensus << "\t" << "C\n";
+		for (const auto &eachSeq : uniqueSequences) {
+			std::string diffs;
+			std::transform(
+				eachSeq.first.cbegin(), eachSeq.first.cend(),
+				consensus.cbegin(), 
+				std::back_inserter(diffs), 
+				[](unsigned char nuc1, unsigned char nuc2){return std::toupper(nuc1) == std::toupper(nuc2) ? '.' : std::toupper(nuc1);});
+			outFile << diffs << "\t" << eachSeq.second << "\n";
+		}
+	} else {
+		throw std::string("ERROR: output file format must be fasta or tab in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+}
+
 void BayesicSpace::saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus,
+								const AlignmentStatistics &alignStats, const std::string &query,
+								const std::string &fileType, std::fstream &outFile) {
+	if (fileType == "fasta") {
+		uint32_t seqIdx{1};
+		outFile << "> Query \n";
+		outFile << query << "\n";
+		outFile << "> Consensus; start: " << alignStats.referenceStart << "; length: " << alignStats.referenceLength << "\n";
+		outFile << consensus << "\n";
+		for (const auto &eachSeq : uniqueSequences) {
+			std::string diffs;
+			std::transform(
+				eachSeq.first.cbegin(), eachSeq.first.cend(),
+				consensus.cbegin(), 
+				std::back_inserter(diffs), 
+				[](unsigned char nuc1, unsigned char nuc2){return std::toupper(nuc1) == std::toupper(nuc2) ? '.' : std::toupper(nuc1);});
+			outFile << "> Sequence " << seqIdx << ": " << eachSeq.second << "\n";
+			outFile << diffs << "\n";
+			++seqIdx;
+		}
+	} else if (fileType == "tab") {
+		outFile << query     << "\t" << "Q\n";
+		outFile << consensus << "\t" << "C|" << alignStats.referenceStart << "|" << alignStats.referenceLength <<"\n";
+		for (const auto &eachSeq : uniqueSequences) {
+			std::string diffs;
+			std::transform(
+				eachSeq.first.cbegin(), eachSeq.first.cend(),
+				consensus.cbegin(), 
+				std::back_inserter(diffs), 
+				[](unsigned char nuc1, unsigned char nuc2){return std::toupper(nuc1) == std::toupper(nuc2) ? '.' : std::toupper(nuc1);});
+			outFile << diffs << "\t" << eachSeq.second << "\n";
+		}
+	} else {
+		throw std::string("ERROR: output file format must be fasta or tab in ") +
+			std::string( static_cast<const char*>(__PRETTY_FUNCTION__) );
+	}
+}
+
+void BayesicSpace::saveUniqueSequences(const std::vector< std::pair<std::string, uint32_t> > &uniqueSequences, const std::string &consensus,
 								const AlignmentStatistics &alignStats, const std::string &query,
 								const std::string &fileType, std::fstream &outFile) {
 	if (fileType == "fasta") {

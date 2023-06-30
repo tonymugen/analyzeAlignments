@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
 		"  --impute-missing  if set (with no value) replaces missing values with the consensus nucleotide.\n"
 		"  --query-sequence  a FASTA file with a query sequence to extract a window containing its best match;\n"
 		"                    if provided, the --start-position and --window-size flags are ingnored.\n"
+		"  --sorted          if set (with no value) sorts the window output by sequence occurrence, descending.\n"
 		"  --out-format      output file format (FASTA or TAB case-insensitive; defaults to TAB).\n"
 		"  --out-file        file_name (output file name; required).\n";
 	try {
@@ -72,11 +73,19 @@ int main(int argc, char *argv[]) {
 			// convert to lower case in-place
 			std::transform(stringVariables.at("out-format").begin(), stringVariables.at("out-format").end(),
 					stringVariables.at("out-format").begin(), [](unsigned char letter){return std::tolower(letter);});
-			auto result{fastaAlign.extractWindow(startPosition, windowSize)};
-			std::fstream outStream;
-			outStream.open(stringVariables.at("out-file"), std::ios::out);
-			BayesicSpace::saveUniqueSequences(result, consensusWindow, stringVariables.at("out-format"), outStream);
-			outStream.close();
+			if (stringVariables.at("sorted") == "unset") {
+				auto result{fastaAlign.extractWindow(startPosition, windowSize)};
+				std::fstream outStream;
+				outStream.open(stringVariables.at("out-file"), std::ios::out);
+				BayesicSpace::saveUniqueSequences(result, consensusWindow, stringVariables.at("out-format"), outStream);
+				outStream.close();
+			} else {
+				auto result{fastaAlign.extractWindowSorted(startPosition, windowSize)};
+				std::fstream outStream;
+				outStream.open(stringVariables.at("out-file"), std::ios::out);
+				BayesicSpace::saveUniqueSequences(result, consensusWindow, stringVariables.at("out-format"), outStream);
+				outStream.close();
+			}
 		} else {
 			std::fstream fastaQueryFile;
 			std::string fastaQueryLine;
@@ -98,11 +107,19 @@ int main(int argc, char *argv[]) {
 			// convert to lower case in-place
 			std::transform(stringVariables.at("out-format").begin(), stringVariables.at("out-format").end(),
 					stringVariables.at("out-format").begin(), [](unsigned char letter){return std::tolower(letter);});
-			auto result{fastaAlign.extractWindow(startPosition, windowSize)};
-			std::fstream outStream;
-			outStream.open(stringVariables.at("out-file"), std::ios::out);
-			BayesicSpace::saveUniqueSequences(result, consensusWindow, windowParams, querySequence, stringVariables.at("out-format"), outStream);
-			outStream.close();
+			if (stringVariables.at("sorted") == "unset") {
+				auto result{fastaAlign.extractWindow(startPosition, windowSize)};
+				std::fstream outStream;
+				outStream.open(stringVariables.at("out-file"), std::ios::out);
+				BayesicSpace::saveUniqueSequences(result, consensusWindow, windowParams, querySequence, stringVariables.at("out-format"), outStream);
+				outStream.close();
+			} else {
+				auto result{fastaAlign.extractWindowSorted(startPosition, windowSize)};
+				std::fstream outStream;
+				outStream.open(stringVariables.at("out-file"), std::ios::out);
+				BayesicSpace::saveUniqueSequences(result, consensusWindow, windowParams, querySequence, stringVariables.at("out-format"), outStream);
+				outStream.close();
+			}
 		}
 	} catch(std::string &problem) {
 		std::cerr << problem << "\n";

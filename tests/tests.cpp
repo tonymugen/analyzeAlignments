@@ -77,6 +77,15 @@ TEST_CASE("A FASTA file is properly parsed", "[parser]") { // NOLINT
 		}
 		REQUIRE(sumUnq == nSequences);
 		REQUIRE_THROWS( testParser.extractWindow(tooBigStart, windowSize) );
+		const auto windowFromPositionSorted = testParser.extractWindowSorted(windowStart, windowSize);
+		// unique sequence counts must sum to the total number
+		uint32_t sumUnqSorted{0};
+		for (const auto &eachSeq : windowFromPosition) {
+			sumUnqSorted += eachSeq.second;
+		}
+		REQUIRE(sumUnqSorted == nSequences);
+		REQUIRE_THROWS( testParser.extractWindowSorted(tooBigStart, windowSize) );
+		REQUIRE(windowFromPositionSorted[0].second >= windowFromPositionSorted.back().second);
 		std::fstream fastaQueryFile;
 		std::string fastaQueryLine;
 		fastaQueryFile.open(std::string("../tests/querySequence.fasta"), std::ios::in);
@@ -129,6 +138,15 @@ TEST_CASE("A FASTA file is properly parsed", "[parser]") { // NOLINT
 		}
 		REQUIRE(sumUnq == nSequences);
 		REQUIRE_THROWS( testParser.extractWindow(tooBigStart, windowSize) );
+		const auto windowFromPositionSorted = testParser.extractWindowSorted(windowStart, windowSize);
+		// unique sequence counts must sum to the total number
+		uint32_t sumUnqSorted{0};
+		for (const auto &eachSeq : windowFromPosition) {
+			sumUnqSorted += eachSeq.second;
+		}
+		REQUIRE(sumUnqSorted == nSequences);
+		REQUIRE_THROWS( testParser.extractWindowSorted(tooBigStart, windowSize) );
+		REQUIRE(windowFromPositionSorted[0].second >= windowFromPositionSorted.back().second);
 		std::fstream fastaQueryFile;
 		std::string fastaQueryLine;
 		fastaQueryFile.open(std::string("../tests/querySequence.fasta"), std::ios::in);

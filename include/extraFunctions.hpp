@@ -80,6 +80,20 @@ namespace BayesicSpace {
 	 * \param[in,out] outFile output stream
 	 */
 	void saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus, const std::string &fileType, std::fstream &outFile);
+	/** \brief Save sorted unique sequences 
+	 *
+	 * Save unique sequences in an alignment window.
+	 * If in FASTA format, the number of times each sequence appears in an alignment is in the header.
+	 * If in TAB format, sequence and the number of occurrences are on the same line, separated by a tab.
+	 * The consensus is displayed on the top line. Nucleotides that are the same as the consensus are displayed as '.', the different residues are shown.
+	 * Sequences are sorted by the number of occurrences in descending order.
+	 *
+	 * \param[in] uniqueSequences table of unique sequences and their counts
+	 * \param[in] consensus consensus sequence for the window
+	 * \param[in] fileType TAB or FASTA, otherwise throws
+	 * \param[in,out] outFile output stream
+	 */
+	void saveUniqueSequences(const std::vector< std::pair<std::string, uint32_t> > &uniqueSequences, const std::string &consensus, const std::string &fileType, std::fstream &outFile);
 	/** \brief Save unique sequences with query 
 	 *
 	 * Save unique sequences in an alignment window.
@@ -98,6 +112,27 @@ namespace BayesicSpace {
 	 * \param[in,out] outFile output stream
 	 */
 	void saveUniqueSequences(const std::unordered_map<std::string, uint32_t> &uniqueSequences, const std::string &consensus,
+								const AlignmentStatistics &alignStats, const std::string &query,
+								const std::string &fileType, std::fstream &outFile);
+	/** \brief Save sorted unique sequences with query 
+	 *
+	 * Save unique sequences in an alignment window.
+	 * If in FASTA format, the number of times each sequence appears in an alignment is in the header.
+	 * If in TAB format, sequence and the number of occurrences are on the same line, separated by a tab.
+	 * The query sequence is displayed on the top line, may be different length than the rest of the sequences if there are insertions/deletions.
+	 * The consensus is displayed on the second line, marked by "C" in the TAB format.
+	 * The start position and length of the widow are also included. They are explicitly described in the consensus FASTA header, or included with a "|" delimiter in the TAB format.
+	 * Nucleotides that are the same as the consensus are displayed as '.', the different residues are shown.
+	 * Sequences are sorted by the number of occurrences in descending order.
+	 *
+	 * \param[in] uniqueSequences table of unique sequences and their counts
+	 * \param[in] consensus consensus sequence for the window
+	 * \param[in] alignStats alignment statistics
+	 * \param[in] query query sequence
+	 * \param[in] fileType TAB or FASTA, otherwise throws
+	 * \param[in,out] outFile output stream
+	 */
+	void saveUniqueSequences(const std::vector< std::pair<std::string, uint32_t> > &uniqueSequences, const std::string &consensus,
 								const AlignmentStatistics &alignStats, const std::string &query,
 								const std::string &fileType, std::fstream &outFile);
 }

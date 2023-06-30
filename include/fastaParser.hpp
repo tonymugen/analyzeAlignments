@@ -119,7 +119,7 @@ namespace BayesicSpace {
 		std::vector< std::pair< size_t, std::vector<uint32_t> > > diversityInWindows(const size_t &windowSize, const size_t &stepSize) const;
 		/** \brief Extract an alignment window
 		 *
-		 * Calculate the number of different sequences in a window.
+		 * Calculates the number of different sequences in a window.
 		 * Reports the number of times each unique sequence occurs in the provided window.
 		 *
 		 * \param[in] windowStartPosition window start
@@ -127,6 +127,17 @@ namespace BayesicSpace {
 		 * \return map of sequences to the number of times each occurs in the alignment
 		 */
 		std::unordered_map<std::string, uint32_t> extractWindow(const size_t &windowStartPosition, const size_t &windowSize) const;
+		/** \brief Extract an alignment window and sort
+		 *
+		 * Calculates the number of different sequences in a window.
+		 * Reports the number of times each unique sequence occurs in the provided window.
+		 * The output is sorted by the number of times a sequence is present, in descending order.
+		 *
+		 * \param[in] windowStartPosition window start
+		 * \param[in] windowSize window size in base pairs
+		 * \return map of sequences to the number of times each occurs in the alignment, sorted
+		 */
+		std::vector< std::pair<std::string, uint32_t> > extractWindowSorted(const size_t &windowStartPosition, const size_t &windowSize) const;
 		/** \brief Extract a region matching a sequence 
 		 *
 		 * Report all unique sequences (and their counts) matching the query sequence.

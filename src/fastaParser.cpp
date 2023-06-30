@@ -165,6 +165,21 @@ std::unordered_map<std::string, uint32_t> ParseFASTA::extractWindow(const size_t
 	return result;
 }
 
+std::vector< std::pair<std::string, uint32_t> > ParseFASTA::extractWindowSorted(const size_t &windowStartPosition, const size_t &windowSize) const {
+	std::unordered_map<std::string, uint32_t> mapResult{this->extractWindow(windowStartPosition, windowSize)};
+	std::vector< std::pair<std::string, uint32_t> > result;
+	result.reserve( mapResult.size() );
+	for (auto &eachSeq : mapResult) {
+		result.emplace_back( std::move(eachSeq) );
+	}
+	std::sort(
+				result.begin(),
+				result.end(),
+				[](const std::pair<std::string, uint32_t> &first, const std::pair<std::string, uint32_t> &second){return first.second > second.second;}
+			);
+	return result;
+}
+
 AlignmentStatistics ParseFASTA::extractSequence(const std::string &querySequence) const {
 	static const int32_t minMaskLen{15};
 	int32_t maskLen{static_cast<int32_t>(querySequence.size() / 2)};
