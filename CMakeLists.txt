@@ -94,16 +94,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
 	set(SANITIZERS "")
 	check_cxx_compiler_flag(-fsanitize=address   HAS_ADDRESS_SANITIZER)
 	check_cxx_compiler_flag(-fsanitize=leak      HAS_LEAK_SANITIZER)
-	check_cxx_compiler_flag(-fsanitize=undefined HAS_UNDEFINED_SANITIZER)
+	#check_cxx_compiler_flag(-fsanitize=undefined HAS_UNDEFINED_SANITIZER)
 	if(${HAS_ADDRESS_SANITIZER})
 		list(APPEND SANITIZERS "address")
 	endif()
 	if(${HAS_LEAK_SANITIZER})
 		list(APPEND SANITIZERS "leak")
 	endif()
-	if(${HAS_UNDEFINED_SANITIZER})
-		list(APPEND SANITIZERS "undefined")
-	endif()
+	# UBSAN has been throwing weird linking errors for tests
+	#if(${HAS_UNDEFINED_SANITIZER})
+	#	list(APPEND SANITIZERS "undefined")
+	#endif()
 	list(JOIN
 		SANITIZERS
 		","
@@ -120,24 +121,34 @@ set(CMAKE_CXX_STATIC_LINKER_FLAGS_PROFILE
 	"-g -p -O3"
 )
 
+set(CMAKE_CXX_FLAGS_PRELEASE
+	"-O3"
+)
+set(CMAKE_CXX_SHARED_LINKER_FLAGS_RELEASE
+	"-O3"
+)
+set(CMAKE_CXX_STATIC_LINKER_FLAGS_RELEASE
+	"-O3"
+)
+
 set(CMAKE_CXX_FLAGS_DEBUG
 	"-g -O1 -fsanitize=${SANITIZER_LIST}"
 )
 set(CMAKE_CXX_SHARED_LINKER_FLAGS_DEBUG
-	"-g -O1 -fsanitize=${SANITIZER_LIST}"
+	"-g -O1"
 )
 set(CMAKE_CXX_STATIC_LINKER_FLAGS_DEBUG
-	"-g -O1 -fsanitize=${SANITIZER_LIST}"
+	"-g -O1"
 )
 
 set(CMAKE_CXX_FLAGS_TEST
-	"-g -O3 -fsanitize=${SANITIZER_LIST}"
+	"-g -O3"
 )
 set(CMAKE_CXX_SHARED_LINKER_FLAGS_TEST
-	"-g -O3 -fsanitize=${SANITIZER_LIST}"
+	"-g -O3"
 )
 set(CMAKE_CXX_STATIC_LINKER_FLAGS_TEST
-	"-g -O3 -fsanitize=${SANITIZER_LIST}"
+	"-g -O3"
 )
 
 include(GNUInstallDirs)
@@ -154,6 +165,11 @@ target_link_libraries(homoruns
 target_compile_options(homoruns
 	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
+if(BUILD_TESTS)
+	target_compile_options(homoruns
+		PRIVATE -fsanitize=${SANITIZER_LIST}
+	)
+endif()
 set_target_properties(homoruns PROPERTIES
 	CXX_STANDARD_REQUIRED ON
 )
@@ -173,6 +189,11 @@ target_link_libraries(extractWindow
 target_compile_options(extractWindow
 	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
+if(BUILD_TESTS)
+	target_compile_options(extractWindow
+		PRIVATE -fsanitize=${SANITIZER_LIST}
+	)
+endif()
 set_target_properties(extractWindow PROPERTIES
 	CXX_STANDARD_REQUIRED ON
 )
@@ -215,6 +236,11 @@ set_target_properties(analizeAlignments PROPERTIES
 target_compile_options(analizeAlignments
 	PRIVATE ${PROJECT_WARNINGS_CXX}
 )
+if(BUILD_TESTS)
+	target_compile_options(analizeAlignments
+		PRIVATE -fsanitize=${SANITIZER_LIST}
+	)
+endif()
 set_target_properties(analizeAlignments PROPERTIES
 	CXX_STANDARD_REQUIRED ON
 )

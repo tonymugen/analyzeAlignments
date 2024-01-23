@@ -4,11 +4,11 @@ A C++14 library and software to extract unique sequences from FASTA alignments. 
 
 # Dependencies
 
-Building the library and binaries requires a C++14 compiler. The build process requires `cmake` version 3.11 or later. Sequence query uses Smith-Watemrman alignment, implemented [here](https://github.com/mengyao/Complete-Striped-Smith-Waterman-Library). This code is included as a submodule.
+Building the library and binaries requires a C++14 compiler. The build process requires `cmake` version 3.11 or later. Sequence query uses Smith-Waterman alignment, implemented [here](https://github.com/mengyao/Complete-Striped-Smith-Waterman-Library). This code is included as a submodule.
 
 # Download and install
 
-The repository comes with a submodule, so to clone use
+The repository comes with submodules, so to clone use
 
 ```sh
 git clone --recurse-submodules https://github.com/tonymugen/analyzeAlignments
@@ -17,7 +17,7 @@ git clone --recurse-submodules https://github.com/tonymugen/analyzeAlignments
 Next, create a build directory
 
 ```sh
-cd vash
+cd analyzeAlignments
 mkdir build
 ```
 
